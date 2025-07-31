@@ -157,7 +157,7 @@ namespace xs
 
     CLogMsg& CLogMsg::operator<<(char* val)
     {
-        *m_pOSStream << val;
+        *m_pOSStream << ToWString(val);
         return *this;
     }
 
@@ -238,6 +238,12 @@ namespace xs
     }
 
     CLogMsg& CLogMsg::operator<<(std::ios& (__cdecl* Func)(std::ios&))
+    {
+        *m_pOSStream << Func;
+        return *this;
+    }
+
+    CLogMsg& CLogMsg::operator<<(std::ios_base& (__cdecl* Func)(std::ios_base&))
     {
         *m_pOSStream << Func;
         return *this;

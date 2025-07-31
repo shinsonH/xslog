@@ -7,6 +7,80 @@
 
 namespace xs
 {
+    std::wstring StringToWString(const std::string& szSrc, int nCodePage)
+    {
+        try
+        {
+            if (szSrc.empty())
+            {
+                return L"";
+            }
+
+            /* 获取转码后宽字符的字符数 */
+            auto nWideCharCount = ::MultiByteToWideChar(nCodePage, 0, szSrc.c_str(), (int)szSrc.length(), NULL, 0);
+            if (nWideCharCount <= 0)
+            {
+                auto err = ::GetLastError();
+                return L"";
+            }
+
+            /* 分配宽字符内存 */
+            std::shared_ptr<wchar_t> pTmpWideBuff(new wchar_t[nWideCharCount]);
+
+            /* 转码 */
+            nWideCharCount = ::MultiByteToWideChar(nCodePage, 0, szSrc.c_str(), (int)szSrc.length(), pTmpWideBuff.get(), nWideCharCount);
+            if (nWideCharCount <= 0)
+            {
+                auto err = ::GetLastError();
+                return L"";
+            }
+
+            return std::wstring(pTmpWideBuff.get(), nWideCharCount);
+        }
+        catch (...)
+        {
+            return L"";
+        }
+    }
+
+    static std::string WStringToString(const std::wstring& wszSrc, int nCodePage)
+    {
+        try
+        {
+            if (wszSrc.empty())
+            {
+                return "";
+            }
+
+            /* 获取转码后多字节字节数 */
+            auto nMultiByteCount = ::WideCharToMultiByte(nCodePage, 0, wszSrc.c_str(), (int)wszSrc.length(), NULL, 0, NULL, NULL);
+            if (nMultiByteCount <= 0)
+            {
+                auto err = ::GetLastError();
+                return "";
+            }
+
+            /* 分配多字节内存 */
+            std::shared_ptr<char> pMultiByteBuff(new char[nMultiByteCount]);
+
+            /* 转码 */
+            BOOL bUsedDefaultChar = FALSE;
+            nMultiByteCount = ::WideCharToMultiByte(nCodePage, 0, wszSrc.c_str(), (int)wszSrc.length(), pMultiByteBuff.get(),
+                nMultiByteCount, NULL, (CP_UTF8 == nCodePage || CP_UTF7 == nCodePage) ? NULL : &bUsedDefaultChar);
+            if (nMultiByteCount <= 0)
+            {
+                auto err = ::GetLastError();
+                return "";
+            }
+
+            return std::string(pMultiByteBuff.get(), nMultiByteCount);
+        }
+        catch (...)
+        {
+            return "";
+        }
+    }
+
     // 输出基类
     CLogSink::CLogSink(bool bAsyncMode) : m_bAsyncMode(bAsyncMode)
     {
@@ -57,8 +131,8 @@ namespace xs
     {
         m_pszLogPath = new std::string();
         m_pszLogName = new std::string();
-        m_pFileStream = new std::wofstream();
-        m_pszBuffer = new std::wstring();
+        m_pFileStream = new std::ofstream();
+        m_pszBuffer = new std::string();
 
         ParseFilePrefix(szFilePrefix);
     }
@@ -68,8 +142,8 @@ namespace xs
     {
         m_pszLogPath = new std::string();
         m_pszLogName = new std::string();
-        m_pFileStream = new std::wofstream();
-        m_pszBuffer = new std::wstring();
+        m_pFileStream = new std::ofstream();
+        m_pszBuffer = new std::string();
         ParseFilePrefix(CLogMsg::ToString(wszFilePrefix));
     }
 
@@ -78,9 +152,8 @@ namespace xs
         Flush();
 
         // 记录统计信息
-        std::wstringstream ss;
-        ss << L"STOP LOGGING: LOG(" << m_nLogCount << L" - " << m_nLogSize
-            << L"), WRITTEN(" << m_nWriteCount << L" - " << m_nWriteSize << L")";
+        std::stringstream ss;
+        ss << "STOP LOGGING: LOG(" << m_nLogCount << " - " << m_nLogSize << "), WRITTEN(" << m_nWriteCount << " - " << m_nWriteSize << ")";
         *m_pszBuffer = ss.str();
         WriteFile();
 
@@ -110,8 +183,9 @@ namespace xs
         }
     }
 
-    void CFileSink::WriteLog(const std::wstring& szLog)
+    void CFileSink::WriteLog(const std::wstring& wszLog)
     {
+        auto szLog = WStringToString(wszLog, CP_UTF8);
         m_nLogCount++;
         m_nLogSize += szLog.size();
         m_pszBuffer->append(szLog);
@@ -140,7 +214,6 @@ namespace xs
             {
                 return;
             }
-            m_pFileStream->imbue(std::locale(""));
         }
 
         m_nWriteCount++;

@@ -110,8 +110,8 @@ namespace xs
         bool m_bAppend = false;                     // 是否为追加模式
         size_t m_nFileMaxSize = 0;                  // 日志文件大小限制，单位字节，默认为0，表示不限制
         unsigned short m_nFileMaxCount = 0;         // 日志文件个数限制，默认为0，表示不限制
-        std::wofstream* m_pFileStream = nullptr;    // 日志文件流对象
-        std::wstring* m_pszBuffer = nullptr;        // 日志缓存
+        std::ofstream* m_pFileStream = nullptr;     // 日志文件流对象
+        std::string* m_pszBuffer = nullptr;         // 日志缓存
         int64_t m_nLogCount = 0;
         int64_t m_nLogSize = 0;
         int64_t m_nWriteCount = 0;

@@ -76,6 +76,7 @@ namespace xs
         CLogMsg& operator<<(std::ostream& (__cdecl* Func)(std::ostream&));
         // call basic_ios manipulator: 
         CLogMsg& operator<<(std::ios& (__cdecl* Func)(std::ios&));
+        CLogMsg& operator<<(std::ios_base& (__cdecl* Func)(std::ios_base&));
         // 支持格式化操作: std::setw/std::setfill
         CLogMsg& operator<<(const std::_Smanip<std::streamsize>& _Manip);
         CLogMsg& operator<<(const std::_Fillobj<char>& _Manip);

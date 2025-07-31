@@ -15,8 +15,9 @@ int main(int argc, const char* argv[])
     XsSetLogLevel(xs::ELogLevel::LEVEL_INFO);
     XsAddSingleFileSink(Path, true);
 
-    XSLOGI << "我是main";
-    XSLOGE << L"我是main[" << std::setw(3) << std::setfill(L'0') << 3 << "]";
+    XSLOGI << "我是main: " << L"龍龖龘𪚥";
+    XSLOGW << L"我是main[0x" << std::hex << std::uppercase << std::setw(8) << std::setfill(L'0') << 55296 << "]";
+    XSLOGE << L"我是main[0xD800 = " << 55296 << "]";
     std::ofstream ofs;
     ofs << std::setw(3) << std::setfill('0');
 
